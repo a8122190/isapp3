@@ -14,39 +14,62 @@
         var me;
 
         $(document).ready(async function () {
-            me = await osql.getMe();
-            document.getElementById('firstname').innerHTML = me.fname;
-            document.getElementById('lastname').innerHTML = me.lname;
+            // me = await osql.getMe();
+            // document.getElementById('firstname').innerHTML = me.fname;
+            // document.getElementById('lastname').innerHTML = me.lname;
 
-            await refreshRooms();
-            setInterval(refreshRooms, 2000);
+            // var sql = `select * from Rooms where id = ${roomId};`;
+            // var objects = await osql.connect(sql);
+
+            // var room = objects[0];
+            // document.getElementById('roomname').innerHTML = room.name;
+
+            await refreshComments();
+            setInterval(refreshComments, 2000);
         });
 
-        async function createRoom() {
-            var name = document.getElementById('roomname').value;
-            var sql = `insert into Rooms (name) values('${name}');`;
-            var roomId = await osql.connectInsert(sql);
-            console.log(roomId);
+        async function register() {
+            var coname = document.getElementById('coname').value;
+            var comypage = document.getElementById('comypage').value;
+            // var comyid = document.getElementById('comyid').value;
+            // var comypassward = document.getElementById('comypassward').value;
+            var coofficialpage = document.getElementById('coofficialpage').value;
+            var webtest = document.getElementById('webtest').value;
+            var sql = `insert into Comain (coname, courl, comypage,webtest) values('${coname}', '${coofficialpage}','${comypage}','${webtest}');`;
+            var comains = await osql.connect(sql);
+            console.log(comains);
+            // var sql1 = `insert into Copersonal (cologid, cologpw, webtest) values('${comyid}', '${comypassward}','${webtest}');`;
+            // var copersonals = await osql.connect(sql1);
+            // console.log(copersonals);
 
-            refreshRooms();
+
         }
 
-        async function refreshRooms() {
-            var sql = 'select * from Rooms;';
+        async function refreshComments() {
+            var sql = `select * from Comain where coid order by coid asc limit 10;`;
             var objects = await osql.connect(sql);
             console.log(objects);
             var html = '';
             html = html + '<table border="1">';
+            html = html + `<td>id</td>`;
+            html = html + `<td>企業名</td>`;
+            html = html + `<td>企業ページ</td>`;
+            html = html + `<td>マイページURL</td>`;
+            html = html + `<td>webテストの種類</td>`;
+            html = html + `<td>個人ページへ</td>`;
             for (var i = 0; i < objects.length; i++) {
                 html = html + '<tr>';
                 var object = objects[i];
-                html = html + `<td>${object.id}</td>`;
-                html = html + `<td>${object.name}</td>`;
-                html = html + `<td><a href="room.html?roomId=${object.id}">入室</a></td>`;
+                html = html + `<td>${object.coid}</td>`;
+                html = html + `<td>${object.coname}</td>`;
+                html = html + `<td>${object.courl}</td>`;
+                html = html + `<td>${object.comypage}</td>`;
+                html = html + `<td>${object.webtest}</td>`;
+                html = html + `<td><a href="copersonal.html?coid=${object.coid}&coname=${object.coname}&comypage=${object.comypage}">自分の情報へ</a></td>`;
                 html = html + '</tr>';
             }
             html = html + '</table>';
-            document.getElementById('rooms').innerHTML = html;
+            document.getElementById('cotables').innerHTML = html;
         }
 
     </script>
@@ -54,19 +77,23 @@
 </head>
 
 <body>
-    <h1>robby</h1>
+    <h1>企業ページ <span id="roomname"></span></h1>
     <div style="text-align: right;">
         ようこそ<span id="lastname"></span> <span id="firstname"></span>さん
         <a href="index.html">top</a>
     </div>
     <hr>
     <div>
-        <h2>create room</h2>
-        <input id="roomname" type="text">
-        <button onclick="createRoom()">new room</button>
+        企業名 : <input id="coname" type="text"><br>
+        マイページURL : <input id="comypage" type="text"><br>
+        <!-- マイページID : <input id="comyid" type="text"><br> -->
+        <!-- マイページパスワード : <input id="comypassward" type="text"><br> -->
+        企業ページURL : <input id="coofficialpage" type="text"><br>
+        Webテストの種類 : <input id="webtest" type="text">
+        <button onclick="register()">企業登録</button>
     </div>
-    <h2>rooms</h2>
-    <div id="rooms"></div>
+    <br>
+    <div id="cotables"></div>
 </body>
 
 </html>
