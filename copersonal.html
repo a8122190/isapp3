@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <script type="text/javascript" src="lib/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/osql.js"></script>
+
+    <script>
+        osql.requireLogin();
+
+        var me;
+        var coname = osql.getParam('coname');
+        var coid = osql.getParam('coid');
+        var comypage = osql.getParam('comypage');
+
+
+        $(document).ready(async function () {
+            me = await osql.getMe();
+            document.getElementById('firstname').innerHTML = me.fname;
+            document.getElementById('lastname').innerHTML = me.lname;
+            document.getElementById('coname').innerHTML = coname;
+
+            // var sql = `select * from Rooms where id = ${roomId};`;
+            // var objects = await osql.connect(sql);
+
+            // var room = objects[0];
+            // document.getElementById('roomname').innerHTML = room.name;
+
+            await refreshComments();
+            setInterval(refreshComments, 2000);
+        });
+
+        async function register() {
+            // var coname = document.getElementById('coname').value;
+            // var comypage = document.getElementById('comypage').value;
+            var comyid = document.getElementById('comyid').value;
+            var comypassward = document.getElementById('comypassward').value;
+            var memo = document.getElementById('memo').value;
+            // var coofficialpage = document.getElementById('coofficialpage').value;
+            // var webtest = document.getElementById('webtest').value;
+            // var sql = `insert into Comain (coname, courl, comypage,webtest) values('${coname}', '${coofficialpage}','${comypage}','${webtest}');`;
+            // var comains = await osql.connect(sql);
+            // console.log(comains);
+            var sql1 = `insert into Copersonal (userid,coid,cologid, cologpw, memo) values('${me.id}','${coid}','${comyid}', '${comypassward}','${memo}');`;
+            var copersonals = await osql.connect(sql1);
+            console.log(copersonals);
+
+
+        }
+
+        async function refreshComments() {
+            var sql = `select Comain.coid,coname,courl,comypage,webtest,userid,cologid,cologpw,memo from Comain inner join Copersonal on Comain.coid = Copersonal.coid;`;
+            var objects = await osql.connect(sql);
+            console.log(objects);
+            var html = '';
+            html = html + '<table border="1">';
+            html = html + `<td>ID</td>`;
+            html = html + `<td>ログインID</td>`;
+            html = html + `<td>ログインパスワード</td>`;
+            html = html + `<td>マイページURL</td>`;
+            html = html + `<td>メモ</td>`;
+            for (var i = 0; i < objects.length; i++) {
+                html = html + '<tr>';
+                var object = objects[i];
+                html = html + `<td>${object.coid}</td>`;
+                html = html + `<td>${object.coname}</td>`;
+                html = html + `<td>${object.courl}</td>`;
+                html = html + `<td>${object.comypage}</td>`;
+                html = html + `<td>${object.memo}</td>`;
+                html = html + '</tr>';
+            }
+            html = html + '</table>';
+            document.getElementById('cotables').innerHTML = html;
+        }
+
+    </script>
+
+</head>
+
+<body>
+    <h1><span id="coname"></span>の個人ページ </h1>
+    <div style="text-align: right;">
+        ようこそ<span id="lastname"></span> <span id="firstname"></span>さん
+        <a href="index.html">top</a>
+    </div>
+    <hr>
+    <div>
+        <!-- 企業名 : <input id="coname" type="text"><br>
+        マイページURL : <input id="comypage" type="text"><br> -->
+        マイページID : <input id="comyid" type="text"><br>
+        マイページパスワード : <input id="comypassward" type="text"><br>
+        メモ : <input id="memo" type="text">
+        <button onclick="register()">企業登録</button>
+    </div>
+    <br>
+    <div id="cotables"></div>
+</body>
+
+</html>
