@@ -46,7 +46,7 @@
         }
 
         async function refreshComments() {
-            var sql = `select * from Comain where coid order by coid asc limit 10;`;
+            var sql = `select * from Comain where coid order by coid asc;`;
             var objects = await osql.connect(sql);
             console.log(objects);
             var html = '';
@@ -72,6 +72,34 @@
             document.getElementById('cotables').innerHTML = html;
         }
 
+        async function search() {
+            var searchname = document.getElementById('search').value;
+            var sql = `select * from Comain where coname like '%${searchname}%' ;`;
+            var objects = await osql.connect(sql);
+            var html = '';
+            html = html + '<table border="1">';
+            html = html + `<td>id</td>`;
+            html = html + `<td>企業名</td>`;
+            html = html + `<td>企業ページ</td>`;
+            html = html + `<td>マイページURL</td>`;
+            html = html + `<td>webテストの種類</td>`;
+            html = html + `<td>個人ページへ</td>`;
+            for (var i = 0; i < objects.length; i++) {
+                html = html + '<tr>';
+                var object = objects[i];
+                html = html + `<td>${object.coid}</td>`;
+                html = html + `<td>${object.coname}</td>`;
+                html = html + `<td>${object.courl}</td>`;
+                html = html + `<td>${object.comypage}</td>`;
+                html = html + `<td>${object.webtest}</td>`;
+                html = html + `<td><a href="copersonal.html?coid=${object.coid}&coname=${object.coname}&comypage=${object.comypage}">自分の情報へ</a></td>`;
+                html = html + '</tr>';
+            }
+            html = html + '</table>';
+            document.getElementById('searchresult').innerHTML = html;
+        }
+
+
     </script>
 
 </head>
@@ -83,7 +111,14 @@
         <a href="index.html">top</a>
     </div>
     <hr>
+    <h4>！！企業名を検索して表示されなかった場合は登録してください！！</h4>
+    企業検索：<input id="search" type="text">
+    <button onclick="search()">検索</button>
+
+    <p id=searchresult></p>
+    <hr>
     <div>
+        <h4>企業登録</h4>
         企業名 : <input id="coname" type="text"><br>
         マイページURL : <input id="comypage" type="text"><br>
         <!-- マイページID : <input id="comyid" type="text"><br> -->
@@ -92,7 +127,8 @@
         Webテストの種類 : <input id="webtest" type="text">
         <button onclick="register()">企業登録</button>
     </div>
-    <br>
+    <hr>
+    <h4>現在の登録済み企業</h4>
     <div id="cotables"></div>
 </body>
 
