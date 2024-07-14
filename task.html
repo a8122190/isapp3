@@ -29,7 +29,8 @@
             // var room = objects[0];
             // document.getElementById('roomname').innerHTML = room.name;
 
-
+            await refreshComments();
+            setInterval(refreshComments, 2000);
         });
 
         async function register() {
@@ -51,13 +52,10 @@
             var schedules = await osql.connect(sql1);
             console.log(schedules);
 
-            await refreshComments();
-            setInterval(refreshComments, 2000);
-
         }
 
         async function refreshComments() {
-            var sql = `select Comain.coname,eventcontent, eventdates, deadcontent, deadline from Comain inner join Schedules on Comain.coid = Schedules.coid;`;
+            var sql = `select Comain.coname,eventcontent, eventdates, deadcontent, deadline from Comain inner join Schedules on Comain.coid = Schedules.coid where userid = '${me.id}';`;
             var objects = await osql.connect(sql);
             console.log(objects);
             var html = '';
