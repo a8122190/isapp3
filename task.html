@@ -48,35 +48,56 @@
             var Coid = await osql.connect(sql);
             console.log(Coid);
             console.log(Coid[0].coid);
-            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline,  eventcontent, deadcontent) values('${me.id}', '${eventdate}','${Coid[0].coid}', '${deadline}','${eventcontent}', '${deadlinecontent}');`;
+            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline,  eventcontent, deadcontent,finish) values('${me.id}', '${eventdate}','${Coid[0].coid}', '${deadline}','${eventcontent}', '${deadlinecontent}',0);`;
             var schedules = await osql.connect(sql1);
             console.log(schedules);
 
         }
 
+
         async function refreshComments() {
-            var sql = `select Comain.coname,eventcontent, eventdates, deadcontent, deadline from Comain inner join Schedules on Comain.coid = Schedules.coid where userid = '${me.id}';`;
+            var sql = `select taskid,Comain.coname,eventcontent, eventdates, deadcontent, deadline,finish from Comain inner join Schedules on Comain.coid = Schedules.coid where userid = '${me.id}';`;
             var objects = await osql.connect(sql);
             console.log(objects);
+
+
             var html = '';
             html = html + '<table border="1">';
+            html = html + `<td>id</td>`;
             html = html + `<td>企業名</td>`;
             html = html + `<td>イベント内容</td>`;
             html = html + `<td>開催日</td>`;
             html = html + `<td>締切内容</td>`;
             html = html + `<td>締切日、時間</td>`;
+            html = html + `<td>完了？</td>`;
+
+
             for (var i = 0; i < objects.length; i++) {
-                html = html + '<tr>';
                 var object = objects[i];
-                html = html + `<td>${object.coname}</td>`;
-                html = html + `<td>${object.eventcontent}</td>`;
-                html = html + `<td>${object.eventdates}</td>`;
-                html = html + `<td>${object.deadcontent}</td>`;
-                html = html + `<td>${object.deadline}</td>`;
-                html = html + '</tr>';
+                console.log(object);
+                if (object.finish == null) {
+                    html = html + '<tr>';
+                    html = html + `<td>${object.taskid}</td>`;
+                    html = html + `<td>${object.coname}</td>`;
+                    html = html + `<td>${object.eventcontent}</td>`;
+                    html = html + `<td>${object.eventdates}</td>`;
+                    html = html + `<td>${object.deadcontent}</td>`;
+                    html = html + `<td>${object.deadline}</td>`;
+                    html = html + `<td> <button onclick="complete(${object.taskid})">完了</button></td>`;
+                    html = html + '</tr>';
+                }
             }
             html = html + '</table>';
             document.getElementById('cotables').innerHTML = html;
+        }
+
+
+        async function complete(i) {
+            var sql = `update Schedules set finish= 1 where taskid = ${i};`;
+            console.log(sql);
+            var finished = await osql.connect(sql);
+            console.log(finished);
+            refreshComments();
         }
 
     </script>
@@ -92,11 +113,11 @@
     <hr>
     <div>
         企業名 : <input id="coname" type="text"><br>
-        開催日 : <input id="eventdate" type="text"><br>
-        イベント内容 : <input id="eventcontent" type="text"><br>
-        締切内容 : <input id="deadlinecontent" type="text"><br>
-        締切日、時間 : <input id="deadline" type="text">
-        <button onclick="register()">企業登録</button>
+        開催日 : <input id="eventdate" type="text" value='0000-00-00'><br>
+        イベント内容 : <input id="eventcontent" type="text"> 例.インターン<br>
+        締切内容 : <input id="deadlinecontent" type="text"> 例.ES<br>
+        締切日、時間 : <input id="deadline" type="text" value='0000-00-00 00:00:00'>
+        <button onclick="register()">タスク登録</button>
     </div>
     <br>
     <div id="cotables"></div>
