@@ -32,15 +32,16 @@
         });
 
         async function register() {
-            var sql1 = `select Copersonal.coid,Comain.coname from Comain inner join Copersonal on Comain.coid = Copersonal.coid where Copersonal.userid =  '${me.id}';`;
-
-            // var sql1 = `select coid,Comain.coname from Comain inner join Copersonal on Comain.coid = Copersonal.coid where Copersonal.userid =  ${me.id};`;
-            // var sql1 = `select * from Comain inner join Copersonal on Comain.coid = Copersonal.coid ;`;
+            var sql1 = `select Comain.coid,Comain.coname from Comain inner join Copersonal on Comain.coid = Copersonal.coid where Copersonal.userid =  '${me.id}';`;
             var copersonals = await osql.connect(sql1);
             console.log(copersonals);
-            var sql1 = `insert into Ranks (coid,userid,rankid) values (${copersonals.coid},${me.id},1000);`;
-            var ranks = await osql.connect(sql1);
-            console.log(ranks);
+
+            for (var i = 0; i < copersonals.length; i++) {
+                console.log(copersonals[i].coid);
+                var sql2 = `insert into Ranks (coid,userid,rankid) values (${copersonals[i].coid},'${me.id}',1000);`;
+                var ranks = await osql.connect(sql2);
+                console.log(ranks);
+            }
 
         }
 
