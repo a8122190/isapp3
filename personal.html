@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <script type="text/javascript" src="lib/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/osql.js"></script>
+
+    <script>
+        osql.requireLogin();
+
+        var me;
+        var coname = osql.getParam('coname');
+        var coid = osql.getParam('coid');
+        var comypage = osql.getParam('comypage');
+
+
+        $(document).ready(async function () {
+            me = await osql.getMe();
+            document.getElementById('firstname').innerHTML = me.fname;
+            document.getElementById('lastname').innerHTML = me.lname;
+
+            // var sql = `select * from Rooms where id = ${roomId};`;
+            // var objects = await osql.connect(sql);
+
+            // var room = objects[0];
+            // document.getElementById('roomname').innerHTML = room.name;
+
+            await refreshComments();
+            setInterval(refreshComments, 2000);
+        });
+
+        async function refreshComments() {
+            var sql = `select Comain.coid,coname,courl,comypage,webtest,userid,cologid,cologpw,memo from Comain inner join Copersonal on Comain.coid = Copersonal.coid where Copersonal.userid =  '${me.id}' ;`;
+            var objects = await osql.connect(sql);
+            console.log(objects);
+            var html = '';
+            html = html + '<table border="1">';
+            // html = html + `<td>ID</td>`;
+            html = html + `<td>企業名</td>`;
+            html = html + `<td>ログインID</td>`;
+            html = html + `<td>ログインパスワード</td>`;
+            html = html + `<td>マイページURL</td>`;
+            html = html + `<td>webテスト</td>`;
+            html = html + `<td>メモ</td>`;
+            html = html + `<td>タスク</td>`;
+            for (var i = 0; i < objects.length; i++) {
+                html = html + '<tr>';
+                var object = objects[i];
+                html = html + `<td>${object.coname}</td>`;
+                html = html + `<td>${object.cologid}</td>`;
+                html = html + `<td>${object.cologpw}</td>`;
+                html = html + `<td><a href=${object.comypage}>マイページへ</a></td>`;
+                html = html + `<td>${object.webtest}</td>`;
+                html = html + `<td>${object.memo}</td>`;
+                html = html + `<td><a href="task.html?coname=${object.coname}">タスク管理へ</a></td>`;
+                html = html + '</tr>';
+            }
+            html = html + '</table>';
+            document.getElementById('cotables').innerHTML = html;
+        }
+
+    </script>
+
+</head>
+
+<body>
+    <h1>個人ページ </h1>
+    <div style="text-align: right;">
+        ようこそ<span id="lastname"></span> <span id="firstname"></span>さん
+        <a href="index.html">top</a>
+    </div>
+    <hr>
+    <div>
+        <!-- 企業名 : <input id="coname" type="text"><br>
+        マイページURL : <input id="comypage" type="text"><br> -->
+    </div>
+    <br>
+    <div id="cotables"></div>
+</body>
+
+</html>
