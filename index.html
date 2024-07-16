@@ -11,19 +11,24 @@
     <script>
         osql.requireLogin();
 
-        $(document).ready(async function () {
-            var me = await osql.getMe();
-            console.log(me);
-            var sql = `insert ignore into Users values('${me.id}', '${me.fname}', '${me.lname}');`;
-            await osql.connect(sql);
+        var me;
+        var coname = osql.getParam('coname');
+        var coid = osql.getParam('coid');
+        var comypage = osql.getParam('comypage');
 
-            document.getElementBayId('firstname').innerHTML = me.fname;
+
+        $(document).ready(async function () {
+            me = await osql.getMe();
+            document.getElementById('firstname').innerHTML = me.fname;
             document.getElementById('lastname').innerHTML = me.lname;
+            document.getElementById('coname').innerHTML = coname;
+
+
+            await refreshComments();
+            setInterval(refreshComments, 2000);
         });
 
-        function logout() {
-            osql.logout();
-        }
+
     </script>
 
 </head>
@@ -42,6 +47,9 @@
         <a href="rankresult.html">志望順位へ</a><br>
         <a href="task.html">タスク管理へ</a>
     </div>
+    <hr>
+
+
 </body>
 
 </html>
