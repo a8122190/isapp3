@@ -44,20 +44,26 @@
             // var sql = `insert into Comain (coname, courl, comypage,webtest) values('${coname}', '${coofficialpage}','${comypage}','${webtest}');`;
             // var comains = await osql.connect(sql);
             // console.log(comains);
+
             var sql1 = `insert into Copersonal (userid,coid,cologid, cologpw, memo) values('${me.id}','${coid}','${comyid}', '${comypassward}','${memo}');`;
             var copersonals = await osql.connect(sql1);
             console.log(copersonals);
+
+            var sql3 = `insert into Ranks (coid,userid,rankid) values (${coid},'${me.id}',1000);`;
+            var ranks = await osql.connect(sql3);
+            console.log(ranks);
 
 
         }
 
         async function refreshComments() {
-            var sql = `select Comain.coid,coname,courl,comypage,webtest,userid,cologid,cologpw,memo from Comain inner join Copersonal on Comain.coid = Copersonal.coid where Copersonal.userid =  '${me.id}';`;
+            var sql = `select Comain.coid,coname,courl,comypage,webtest,userid,cologid,cologpw,memo from Comain inner join Copersonal on Comain.coid = Copersonal.coid where Copersonal.userid =  '${me.id}' AND Comain.coid = ${coid};`;
             var objects = await osql.connect(sql);
             console.log(objects);
             var html = '';
             html = html + '<table border="1">';
-            html = html + `<td>ID</td>`;
+            // html = html + `<td>ID</td>`;
+            html = html + `<td>企業名</td>`;
             html = html + `<td>ログインID</td>`;
             html = html + `<td>ログインパスワード</td>`;
             html = html + `<td>マイページURL</td>`;
@@ -65,9 +71,9 @@
             for (var i = 0; i < objects.length; i++) {
                 html = html + '<tr>';
                 var object = objects[i];
-                html = html + `<td>${object.coid}</td>`;
                 html = html + `<td>${object.coname}</td>`;
-                html = html + `<td>${object.courl}</td>`;
+                html = html + `<td>${object.cologid}</td>`;
+                html = html + `<td>${object.cologpw}</td>`;
                 html = html + `<td><a href=${object.comypage}>マイページへ</a></td>`;
                 html = html + `<td>${object.memo}</td>`;
                 html = html + '</tr>';
