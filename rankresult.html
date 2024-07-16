@@ -50,9 +50,7 @@
         }
 
         async function refreshComments() {
-
-
-            var sql = `select Comain.coname from Comain inner join Ranks on Comain.coid = Ranks.coid where Comain.userid = ${me.id} AND Ranks.rankid = 1000;`;
+            var sql = `select Comain.coname from Comain inner join Ranks on Comain.coid = Ranks.coid where Ranks.userid = '${me.id}' AND Ranks.rankid = 1000;`;
             var noranks = await osql.connect(sql);
             console.log(noranks);
 
