@@ -52,7 +52,7 @@
         }
 
         async function refreshComments() {
-            var sql = `select Comain.coid,coname,courl,comypage,webtest,userid,cologid,cologpw,memo from Comain inner join Copersonal on Comain.coid = Copersonal.coid;`;
+            var sql = `select Comain.coid,coname,courl,comypage,webtest,userid,cologid,cologpw,memo from Comain inner join Copersonal on Comain.coid = Copersonal.coid where Copersonal.userid =  '${me.id}';`;
             var objects = await osql.connect(sql);
             console.log(objects);
             var html = '';
