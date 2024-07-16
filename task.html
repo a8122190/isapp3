@@ -21,7 +21,7 @@
             me = await osql.getMe();
             document.getElementById('firstname').innerHTML = me.fname;
             document.getElementById('lastname').innerHTML = me.lname;
-            document.getElementById('coname').innerHTML = coname;
+            document.getElementById('coname').value = coname;
 
             // var sql = `select * from Rooms where id = ${roomId};`;
             // var objects = await osql.connect(sql);
@@ -75,7 +75,7 @@
             for (var i = 0; i < objects.length; i++) {
                 var object = objects[i];
                 console.log(object);
-                if (object.finish == null) {
+                if (object.finish == 0) {
                     html = html + '<tr>';
                     html = html + `<td>${object.taskid}</td>`;
                     html = html + `<td>${object.coname}</td>`;
@@ -112,7 +112,7 @@
     </div>
     <hr>
     <div>
-        企業名 : <input id="coname" type="text"><br>
+        企業名 : <input id="coname" type="text" value=coname><br>
         開催日 : <input id="eventdate" type="text" value='0000-00-00'><br>
         イベント内容 : <input id="eventcontent" type="text"> 例.インターン<br>
         締切内容 : <input id="deadlinecontent" type="text"> 例.ES<br>
@@ -121,7 +121,7 @@
     </div>
     <br>
     <div id="cotables"></div>
-    <h3><a href="history.html">今までのタスクへ</a></h3>
+    <h4><a href="history.html">今までのタスクへ</a></h4>
 </body>
 
 </html>
