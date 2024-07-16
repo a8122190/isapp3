@@ -12,49 +12,62 @@
         osql.requireLogin();
 
         var me;
-        var roomId = osql.getParam('roomId');
+        var coid = osql.getParam('coid');
+        var comypage = osql.getParam('comypage');
+
 
         $(document).ready(async function () {
             me = await osql.getMe();
             document.getElementById('firstname').innerHTML = me.fname;
             document.getElementById('lastname').innerHTML = me.lname;
 
-            var sql = `select * from Rooms where id = ${roomId};`;
-            var objects = await osql.connect(sql);
+            // var sql = `select * from Rooms where id = ${roomId};`;
+            // var objects = await osql.connect(sql);
 
-            var room = objects[0];
-            document.getElementById('roomname').innerHTML = room.name;
-
+            // var room = objects[0];
+            // document.getElementById('roomname').innerHTML = room.name;
+            await register();
             await refreshComments();
             setInterval(refreshComments, 2000);
         });
 
-        async function newComment() {
-            var name = document.getElementById('comment').value;
-            var sql = `insert into Comments (roomId, userId, comment, time) values(${roomId}, '${me.id}','${name}', now());`;
-            var commentId = await osql.connectInsert(sql);
-            console.log(commentId);
+        async function register() {
+            var sql1 = `select Copersonal.coid,Comain.coname from Comain inner join Copersonal on Comain.coid = Copersonal.coid where Copersonal.userid =  '${me.id}';`;
 
-            await refreshComments();
+            // var sql1 = `select coid,Comain.coname from Comain inner join Copersonal on Comain.coid = Copersonal.coid where Copersonal.userid =  ${me.id};`;
+            // var sql1 = `select * from Comain inner join Copersonal on Comain.coid = Copersonal.coid ;`;
+            var copersonals = await osql.connect(sql1);
+            console.log(copersonals);
+            var sql1 = `insert into Ranks (coid,userid,rankid) values (${copersonals.coid},${me.id},1000);`;
+            var ranks = await osql.connect(sql1);
+            console.log(ranks);
+
+        }
+
+        async function change() {
+
         }
 
         async function refreshComments() {
-            var sql = `select * from Comments where roomId = ${roomId} order by time desc limit 10;`;
-            var objects = await osql.connect(sql);
-            console.log(objects);
+
+
+            var sql = `select Comain.coname from Comain inner join Ranks on Comain.coid = Ranks.coid where Comain.userid = ${me.id} AND Ranks.rankid = 1000;`;
+            var noranks = await osql.connect(sql);
+            console.log(noranks);
+
             var html = '';
             html = html + '<table border="1">';
-            for (var i = 0; i < objects.length; i++) {
+            html = html + `<td>企業名</td>`;
+            html = html + `<td>変更ボタン</td>`;
+            for (var i = 0; i < noranks.length; i++) {
                 html = html + '<tr>';
-                var object = objects[i];
-                html = html + `<td>${object.id}</td>`;
-                html = html + `<td>${object.time}</td>`;
-                html = html + `<td>${object.userId}</td>`;
-                html = html + `<td>${object.comment}</td>`;
+                var norank = noranks[i];
+                html = html + `<td>${norank.coname}</td>`;
+                html = html + `<td><button onclick="change()">変更</button></td>`;
                 html = html + '</tr>';
             }
             html = html + '</table>';
-            document.getElementById('comments').innerHTML = html;
+            document.getElementById('cotables').innerHTML = html;
         }
 
     </script>
@@ -62,18 +75,22 @@
 </head>
 
 <body>
-    <h1>talkroom <span id="roomname"></span></h1>
+    <h1>志望順位 </h1>
     <div style="text-align: right;">
         ようこそ<span id="lastname"></span> <span id="firstname"></span>さん
         <a href="index.html">top</a>
     </div>
     <hr>
     <div>
-        <input id="comment" type="text">
-        <button onclick="newComment()">new comment</button>
+        <!-- 企業名 : <input id="coname" type="text"><br>
+        マイページURL : <input id="comypage" type="text"><br> -->
+        マイページID : <input id="comyid" type="text"><br>
+        マイページパスワード : <input id="comypassward" type="text"><br>
+        メモ : <input id="memo" type="text">
+        <button onclick="register()">企業登録</button>
     </div>
     <br>
-    <div id="comments"></div>
+    <div id="cotables"></div>
 </body>
 
 </html>
