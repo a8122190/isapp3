@@ -52,6 +52,30 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
+        .form-section input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-section button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .form-section button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -73,15 +97,6 @@
         th {
             background-color: #4CAF50;
             color: white;
-        }
-
-        td a {
-            color: #4CAF50;
-            text-decoration: none;
-        }
-
-        td a:hover {
-            text-decoration: underline;
         }
     </style>
 
@@ -111,19 +126,25 @@
 
             var sql = `select coid from Comain where coname = '${coname}';`;
             var Coid = await osql.connect(sql);
-            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline,  eventcontent, deadcontent,finish) values('${me.id}', '${eventdate}','${Coid[0].coid}', '${deadline}','${eventcontent}', '${deadlinecontent}',0);`;
+            console.log(Coid);
+            console.log(Coid[0].coid);
+
+            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline, eventcontent, deadcontent, finish) values('${me.id}', '${eventdate}', '${Coid[0].coid}', '${deadline}', '${eventcontent}', '${deadlinecontent}', 0);`;
             var schedules = await osql.connect(sql1);
+            console.log(schedules);
         }
 
         async function refreshComments() {
             var sql = `select taskid, Comain.coname, eventcontent, eventdates, deadcontent, deadline, finish from Comain inner join Schedules on Comain.coid = Schedules.coid where userid = '${me.id}';`;
             var objects = await osql.connect(sql);
+            console.log(objects);
+
             var html = '<table>';
-            html += '<tr><th>ID</th><th>企業名</th><th>イベント内容</th><th>開催日</th><th>締切内容</th><th>締切日</th><th>完了</th></tr>';
+            html += `<tr><th>企業名</th><th>イベント内容</th><th>開催日</th><th>締切内容</th><th>締切日、時間</th><th>完了</th></tr>`;
             for (var i = 0; i < objects.length; i++) {
                 var object = objects[i];
                 if (object.finish == 1) {
-                    html += `<tr><td>${object.taskid}</td><td>${object.coname}</td><td>${object.eventcontent}</td><td>${object.eventdates}</td><td>${object.deadcontent}</td><td>${object.deadline}</td><td>完了</td></tr>`;
+                    html += `<tr><td>${object.coname}</td><td>${object.eventcontent}</td><td>${object.eventdates}</td><td>${object.deadcontent}</td><td>${object.deadline}</td><td>完了</td></tr>`;
                 }
             }
             html += '</table>';
@@ -131,7 +152,8 @@
         }
 
         async function complete(i) {
-            var sql = `update Schedules set finish= 1 where taskid = ${i};`;
+            var sql = `update Schedules set finish = 1 where taskid = ${i};`;
+            console.log(sql);
             var finished = await osql.connect(sql);
             refreshComments();
         }
