@@ -31,7 +31,7 @@
             // document.getElementById('roomname').innerHTML = room.name;
 
             await refreshComments();
-            setInterval(refreshComments, 2000);
+            setInterval(refreshComments, 10000);
         });
 
         async function register() {
@@ -84,9 +84,19 @@
                     html = html + `<td>${object.coname}</td>`;
                     html = html + `<td>${object.eventcontent}</td>`;
                     html = html + `<td>${object.deadcontent}</td>`;
-                    html = html + `<td>${object.result}</td>`;
+                    html = html + `<td><select id="results">
+                                        <option value="fin">${object.result}</option>
+                                        <option value = "pass">通過</option>
+                                        <option value = "prey">お祈り</option>
+                                        </select>
+                                    </td>`;
                     html = html + '</tr>';
                 }
+                var results = $("#results").val();
+                var sql = `update Schedules set result = '${results}' where taskid = ${i};`;
+                console.log(sql);
+                var results = await osql.connect(sql);
+                console.log(results);
             }
             html = html + '</table>';
             document.getElementById('cotables').innerHTML = html;
