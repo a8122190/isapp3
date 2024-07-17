@@ -12,8 +12,7 @@
             font-family: 'Noto Sans JP', sans-serif;
             background-color: #f4f4f9;
             margin: 0;
-            padding: 20px;
-            /* Added padding to body */
+            padding: 0;
             color: #333;
         }
 
@@ -44,7 +43,9 @@
             border-top: 1px solid #ddd;
         }
 
-        .register-section {
+        .search-section,
+        .register-section,
+        .task-section {
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
@@ -53,11 +54,15 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .register-section h4 {
+        .search-section h4,
+        .register-section h4,
+        .task-section h4 {
             margin-top: 0;
         }
 
-        .register-section input {
+        .search-section input,
+        .register-section input,
+        .task-section input {
             width: calc(100% - 22px);
             padding: 10px;
             margin: 5px 0;
@@ -65,7 +70,9 @@
             border-radius: 4px;
         }
 
-        .register-section button {
+        .search-section button,
+        .register-section button,
+        .task-section button {
             padding: 10px 20px;
             background-color: #4CAF50;
             color: white;
@@ -76,7 +83,9 @@
             transition: background-color 0.3s ease, transform 0.3s ease;
         }
 
-        .register-section button:hover {
+        .search-section button:hover,
+        .register-section button:hover,
+        .task-section button:hover {
             background-color: #45a049;
             transform: translateY(-2px);
         }
@@ -84,10 +93,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
-            /* Reduced margin top */
-            font-size: 14px;
-            /* Reduced font size */
+            margin-top: 20px;
         }
 
         table,
@@ -98,8 +104,7 @@
 
         th,
         td {
-            padding: 8px;
-            /* Reduced padding */
+            padding: 10px;
             text-align: left;
         }
 
@@ -108,18 +113,33 @@
             color: white;
         }
 
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-        .history-link {
+        .task-link {
             text-align: center;
             margin-top: 20px;
         }
 
-        .history-link a {
-            color: #4CAF50;
+        .task-link a {
+            color: white;
+            background-color: #4CAF50;
+            padding: 5px 10px;
+            border-radius: 4px;
             text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .task-link a:hover {
+            background-color: #45a049;
+        }
+
+        .task-link a span {
+            background-color: #4CAF50;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .task-link a:hover span {
+            background-color: #45a049;
         }
     </style>
 
@@ -152,7 +172,7 @@
             var Coid = await osql.connect(sql);
             console.log(Coid);
             console.log(Coid[0].coid);
-            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline,  eventcontent, deadcontent, finish) values('${me.id}', '${eventdate}','${Coid[0].coid}', '${deadline}','${eventcontent}', '${deadlinecontent}',0);`;
+            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline,  eventcontent, deadcontent,finish) values('${me.id}', '${eventdate}','${Coid[0].coid}', '${deadline}','${eventcontent}', '${deadlinecontent}',0);`;
             var schedules = await osql.connect(sql1);
             console.log(schedules);
         }
@@ -162,8 +182,10 @@
             var objects = await osql.connect(sql);
             console.log(objects);
 
-            var html = '<table>';
-            html += `<tr><th>企業名</th><th>イベント内容</th><th>開催日</th><th>締切内容</th><th>締切日、時間</th><th>完了？</th></tr>`;
+            var html = '';
+            html += '<table>';
+            html += '<tr><th>企業名</th><th>イベント内容</th><th>開催日</th><th>締切内容</th><th>締切日、時間</th><th>完了？</th></tr>';
+
             for (var i = 0; i < objects.length; i++) {
                 var object = objects[i];
                 if (object.finish == 0) {
@@ -173,7 +195,7 @@
                     html += `<td>${object.eventdates}</td>`;
                     html += `<td>${object.deadcontent}</td>`;
                     html += `<td>${object.deadline}</td>`;
-                    html += `<td> <button onclick="complete(${object.taskid})">完了</button></td>`;
+                    html += `<td><button onclick="complete(${object.taskid})">完了</button></td>`;
                     html += '</tr>';
                 }
             }
@@ -181,16 +203,17 @@
             document.getElementById('cotables').innerHTML = html;
         }
 
-        async function complete(i) {
-            var sql = `update Schedules set finish= 1 where taskid = ${i};`;
+        async function complete(taskId) {
+            var sql = `update Schedules set finish = 1 where taskid = ${taskId};`;
             console.log(sql);
             var finished = await osql.connect(sql);
             console.log(finished);
 
-            var sql = `update Schedules set result = '結果待ち' where Schedules.taskid = ${i};`;
+            var sql = `update Schedules set result = '結果待ち' where taskid = ${taskId};`;
             console.log(sql);
             var results = await osql.connect(sql);
             console.log(results);
+
             refreshComments();
         }
     </script>
@@ -204,17 +227,23 @@
     </div>
     <hr>
     <div class="register-section">
-        企業名 : <input id="coname" type="text" value="coname"><br>
-        開催日 : <input id="eventdate" type="text" value="0000-00-00"><br>
-        イベント内容 : <input id="eventcontent" type="text"> 例.インターン<br>
-        締切内容 : <input id="deadlinecontent" type="text"> 例.ES<br>
-        締切日、時間 : <input id="deadline" type="text" value="0000-00-00 00:00:00">
-        <button onclick="register()">タスク登録</button>
+        <h4>タスク登録</h4>
+        <div>
+            企業名 : <input id="coname" type="text" value="企業名"><br>
+            開催日 : <input id="eventdate" type="text" value="0000-00-00"><br>
+            イベント内容 : <input id="eventcontent" type="text" placeholder="インターン"><br>
+            締切内容 : <input id="deadlinecontent" type="text" placeholder="ES"><br>
+            締切日、時間 : <input id="deadline" type="text" value="0000-00-00 00:00:00">
+            <button onclick="register()">タスク登録</button>
+        </div>
     </div>
     <br>
-    <div id="cotables"></div>
-    <div class="history-link">
-        <h4><a href="history.html">今までのタスクへ</a></h4>
+    <div class="task-section">
+        <h4>現在のタスク</h4>
+        <div id="cotables"></div>
+    </div>
+    <div class="task-link">
+        <a href="history.html"><span>今までのタスクへ</span></a>
     </div>
 </body>
 
