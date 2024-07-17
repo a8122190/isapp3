@@ -43,50 +43,60 @@
             border-top: 1px solid #ddd;
         }
 
-        .links {
-            max-width: 1000px;
+        .form-section {
+            max-width: 800px;
             margin: 20px auto;
-            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .links a {
-            display: inline-block;
-            margin: 10px;
-            padding: 15px 25px;
+        .form-section input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-section button {
+            padding: 10px 20px;
             background-color: #4CAF50;
             color: white;
-            text-decoration: none;
+            border: none;
             border-radius: 4px;
             font-weight: bold;
+            cursor: pointer;
             transition: background-color 0.3s ease, transform 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        .links a:hover {
+        .form-section button:hover {
             background-color: #45a049;
             transform: translateY(-2px);
         }
 
-        #catroom {
-            margin: 20px auto;
-            padding: 0;
-            overflow: hidden;
-            background-image: url('room_washitsu.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            position: relative;
-            height: 700px;
+        table {
             width: 100%;
-            max-width: 1200px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-collapse: collapse;
+            margin-top: 20px;
         }
 
-        .cat {
-            position: absolute;
-            width: 100px;
-            height: 100px;
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
         }
     </style>
 
@@ -103,46 +113,71 @@
             document.getElementById('firstname').innerHTML = me.fname;
             document.getElementById('lastname').innerHTML = me.lname;
 
-            await placeCats();
-            setInterval(placeCats, 4000);
+            await refreshComments();
+            setInterval(refreshComments, 2000);
         });
 
-        async function placeCats() {
-            var sql = `select * from Copersonal;`;
-            var copersonal = await osql.connect(sql);
-            console.log(copersonal);
-            console.log(copersonal.length);
+        async function register() {
+            var coname = document.getElementById('coname').value;
+            var eventdate = document.getElementById('eventdate').value;
+            var eventcontent = document.getElementById('eventcontent').value;
+            var deadlinecontent = document.getElementById('deadlinecontent').value;
+            var deadline = document.getElementById('deadline').value;
 
-            const catroom = document.getElementById('catroom');
-            catroom.innerHTML = '';
+            var sql = `select coid from Comain where coname = '${coname}';`;
+            var Coid = await osql.connect(sql);
+            console.log(Coid);
+            console.log(Coid[0].coid);
 
-            for (let i = 0; i < copersonal.length; i++) {
-                const img = document.createElement('img');
-                const catImages = ['cat_hair_long.png'];
-                img.src = catImages[Math.floor(Math.random() * catImages.length)];
-                img.classList.add('cat');
-                img.style.top = `${Math.random() * (catroom.clientHeight - 50)}px`;
-                img.style.left = `${Math.random() * (catroom.clientWidth - 50)}px`;
-                catroom.appendChild(img);
+            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline, eventcontent, deadcontent, finish) values('${me.id}', '${eventdate}', '${Coid[0].coid}', '${deadline}', '${eventcontent}', '${deadlinecontent}', 0);`;
+            var schedules = await osql.connect(sql1);
+            console.log(schedules);
+        }
+
+        async function refreshComments() {
+            var sql = `select taskid, Comain.coname, eventcontent, eventdates, deadcontent, deadline, finish from Comain inner join Schedules on Comain.coid = Schedules.coid where userid = '${me.id}';`;
+            var objects = await osql.connect(sql);
+            console.log(objects);
+
+            var html = '<table>';
+            html += `<tr><th>ID</th><th>企業名</th><th>イベント内容</th><th>開催日</th><th>締切内容</th><th>締切日、時間</th><th>完了</th></tr>`;
+            for (var i = 0; i < objects.length; i++) {
+                var object = objects[i];
+                if (object.finish == 1) {
+                    html += `<tr><td>${object.taskid}</td><td>${object.coname}</td><td>${object.eventcontent}</td><td>${object.eventdates}</td><td>${object.deadcontent}</td><td>${object.deadline}</td><td>完了</td></tr>`;
+                }
             }
+            html += '</table>';
+            document.getElementById('cotables').innerHTML = html;
+        }
+
+        async function complete(i) {
+            var sql = `update Schedules set finish = 1 where taskid = ${i};`;
+            console.log(sql);
+            var finished = await osql.connect(sql);
+            console.log(finished);
+            refreshComments();
         }
     </script>
 </head>
 
 <body>
-    <h1>就活情報管理サイト</h1>
+    <h1>タスク管理</h1>
     <div class="header-right">
         ようこそ<span id="lastname"></span> <span id="firstname"></span>さん
-        <a href="javascript:logout()">logout</a>
+        <a href="index.html">top</a>
     </div>
-    <div class="links">
-        <a href="copage.html">企業一覧ページ 最初はこちら！</a>
-        <a href="personal.html">個人ページへ</a>
-        <a href="rankresult.html">志望順位へ</a>
-        <a href="task.html">タスク管理へ</a>
-        <a href="progress.html">進捗状況へ</a>
+    <div class="form-section">
+        企業名: <input id="coname" type="text" value=""><br>
+        開催日（年、月、日）: <input id="eventdate" type="text" value="0000-00-00"><br>
+        イベント内容: <input id="eventcontent" type="text" value=""><br>
+        締切内容: <input id="deadlinecontent" type="text" value=""><br>
+        締切日（年、月、日、時間）: <input id="deadline" type="text" value="0000-00-00 00:00:00"><br>
+        <button onclick="register()">タスク登録</button>
     </div>
-    <div id="catroom"></div>
+    <div class="form-section">
+        <div id="cotables"></div>
+    </div>
 </body>
 
 </html>

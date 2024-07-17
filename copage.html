@@ -1,12 +1,113 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="lib/jquery.min.js"></script>
     <script type="text/javascript" src="lib/osql.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .header-right {
+            text-align: right;
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+        }
+
+        .header-right a {
+            color: white;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        hr {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+
+        .search-section,
+        .register-section {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-section h4,
+        .register-section h4 {
+            margin-top: 0;
+        }
+
+        .search-section input,
+        .register-section input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .search-section button,
+        .register-section button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .search-section button:hover,
+        .register-section button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
 
     <script>
         osql.requireLogin();
@@ -17,13 +118,6 @@
             me = await osql.getMe();
             document.getElementById('firstname').innerHTML = me.fname;
             document.getElementById('lastname').innerHTML = me.lname;
-
-            // var sql = `select * from Rooms where id = ${roomId};`;
-            // var objects = await osql.connect(sql);
-
-            // var room = objects[0];
-            // document.getElementById('roomname').innerHTML = room.name;
-
             await refreshComments();
             setInterval(refreshComments, 2000);
         });
@@ -31,44 +125,24 @@
         async function register() {
             var coname = document.getElementById('coname').value;
             var comypage = document.getElementById('comypage').value;
-            // var comyid = document.getElementById('comyid').value;
-            // var comypassward = document.getElementById('comypassward').value;
             var coofficialpage = document.getElementById('coofficialpage').value;
             var webtest = document.getElementById('webtest').value;
-            var sql = `insert into Comain (coname, courl, comypage,webtest) values('${coname}', '${coofficialpage}','${comypage}','${webtest}');`;
+            var sql = `insert into Comain (coname, courl, comypage, webtest) values('${coname}', '${coofficialpage}', '${comypage}', '${webtest}');`;
             var comains = await osql.connect(sql);
             console.log(comains);
-            // var sql1 = `insert into Copersonal (cologid, cologpw, webtest) values('${comyid}', '${comypassward}','${webtest}');`;
-            // var copersonals = await osql.connect(sql1);
-            // console.log(copersonals);
-
-
         }
 
         async function refreshComments() {
             var sql = `select * from Comain where coid order by coid asc;`;
             var objects = await osql.connect(sql);
             console.log(objects);
-            var html = '';
-            html = html + '<table border="1">';
-            html = html + `<td>id</td>`;
-            html = html + `<td>企業名</td>`;
-            html = html + `<td>企業ページ</td>`;
-            html = html + `<td>マイページURL</td>`;
-            html = html + `<td>webテストの種類</td>`;
-            html = html + `<td>個人ページへ</td>`;
+            var html = '<table>';
+            html += `<tr><th>id</th><th>企業名</th><th>企業ページ</th><th>マイページURL</th><th>webテストの種類</th><th>個人ページへ</th></tr>`;
             for (var i = 0; i < objects.length; i++) {
-                html = html + '<tr>';
                 var object = objects[i];
-                html = html + `<td>${object.coid}</td>`;
-                html = html + `<td>${object.coname}</td>`;
-                html = html + `<td>${object.courl}</td>`;
-                html = html + `<td>${object.comypage}</td>`;
-                html = html + `<td>${object.webtest}</td>`;
-                html = html + `<td><a href="copersonal.html?coid=${object.coid}&coname=${object.coname}&comypage=${object.comypage}">自分の情報へ</a></td>`;
-                html = html + '</tr>';
+                html += `<tr><td>${object.coid}</td><td>${object.coname}</td><td>${object.courl}</td><td>${object.comypage}</td><td>${object.webtest}</td><td><a href="copersonal.html?coid=${object.coid}&coname=${object.coname}&comypage=${object.comypage}">自分の情報へ</a></td></tr>`;
             }
-            html = html + '</table>';
+            html += '</table>';
             document.getElementById('cotables').innerHTML = html;
         }
 
@@ -76,60 +150,42 @@
             var searchname = document.getElementById('search').value;
             var sql = `select * from Comain where coname like '%${searchname}%' ;`;
             var objects = await osql.connect(sql);
-            var html = '';
-            html = html + '<table border="1">';
-            html = html + `<td>id</td>`;
-            html = html + `<td>企業名</td>`;
-            html = html + `<td>企業ページ</td>`;
-            html = html + `<td>マイページURL</td>`;
-            html = html + `<td>webテストの種類</td>`;
-            html = html + `<td>個人ページへ</td>`;
+            var html = '<table>';
+            html += `<tr><th>id</th><th>企業名</th><th>企業ページ</th><th>マイページURL</th><th>webテストの種類</th><th>個人ページへ</th></tr>`;
             for (var i = 0; i < objects.length; i++) {
-                html = html + '<tr>';
                 var object = objects[i];
-                html = html + `<td>${object.coid}</td>`;
-                html = html + `<td>${object.coname}</td>`;
-                html = html + `<td>${object.courl}</td>`;
-                html = html + `<td>${object.comypage}</td>`;
-                html = html + `<td>${object.webtest}</td>`;
-                html = html + `<td><a href="copersonal.html?coid=${object.coid}&coname=${object.coname}&comypage=${object.comypage}">自分の情報へ</a></td>`;
-                html = html + '</tr>';
+                html += `<tr><td>${object.coid}</td><td>${object.coname}</td><td>${object.courl}</td><td>${object.comypage}</td><td>${object.webtest}</td><td><a href="copersonal.html?coid=${object.coid}&coname=${object.coname}&comypage=${object.comypage}">自分の情報へ</a></td></tr>`;
             }
-            html = html + '</table>';
+            html += '</table>';
             document.getElementById('searchresult').innerHTML = html;
         }
-
-
     </script>
-
 </head>
 
 <body>
-    <h1>企業ページ <span id="roomname"></span></h1>
-    <div style="text-align: right;">
+    <h1>企業ページ</h1>
+    <div class="header-right">
         ようこそ<span id="lastname"></span> <span id="firstname"></span>さん
         <a href="index.html">top</a>
     </div>
-    <hr>
-    <h4>！！企業名を検索して表示されなかった場合は登録してください！！</h4>
-    企業検索：<input id="search" type="text">
-    <button onclick="search()">検索</button>
-
-    <p id=searchresult></p>
-    <hr>
-    <div>
+    <div class="search-section">
+        <h4>企業検索</h4>
+        <input id="search" type="text" placeholder="企業名を入力">
+        <button onclick="search()">検索</button>
+        <div id="searchresult"></div>
+    </div>
+    <div class="register-section">
         <h4>企業登録</h4>
-        企業名 : <input id="coname" type="text"><br>
-        マイページURL : <input id="comypage" type="text"><br>
-        <!-- マイページID : <input id="comyid" type="text"><br> -->
-        <!-- マイページパスワード : <input id="comypassward" type="text"><br> -->
-        企業ページURL : <input id="coofficialpage" type="text"><br>
-        Webテストの種類 : <input id="webtest" type="text">
+        <input id="coname" type="text" placeholder="企業名"><br>
+        <input id="comypage" type="text" placeholder="マイページURL"><br>
+        <input id="coofficialpage" type="text" placeholder="企業ページURL"><br>
+        <input id="webtest" type="text" placeholder="Webテストの種類"><br>
         <button onclick="register()">企業登録</button>
     </div>
-    <hr>
-    <h4>現在の登録済み企業</h4>
-    <div id="cotables"></div>
+    <div class="register-section">
+        <h4>現在の登録済み企業</h4>
+        <div id="cotables"></div>
+    </div>
 </body>
 
 </html>
