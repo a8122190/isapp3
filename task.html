@@ -97,6 +97,11 @@
             console.log(sql);
             var finished = await osql.connect(sql);
             console.log(finished);
+
+            var sql = `update Schedules set result = '結果待ち' where Schedules.taskid = ${i};`;
+            console.log(sql);
+            var results = await osql.connect(sql);
+            console.log(results);
             refreshComments();
         }
 
