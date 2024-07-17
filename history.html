@@ -1,12 +1,104 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="lib/jquery.min.js"></script>
     <script type="text/javascript" src="lib/osql.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .header-right {
+            text-align: right;
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+        }
+
+        .header-right a {
+            color: white;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        hr {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+
+        .form-section {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-section button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .form-section button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
 
     <script>
         osql.requireLogin();
@@ -16,17 +108,10 @@
         var coid = osql.getParam('coid');
         var comypage = osql.getParam('comypage');
 
-
         $(document).ready(async function () {
             me = await osql.getMe();
             document.getElementById('firstname').innerHTML = me.fname;
             document.getElementById('lastname').innerHTML = me.lname;
-
-            // var sql = `select * from Rooms where id = ${roomId};`;
-            // var objects = await osql.connect(sql);
-
-            // var room = objects[0];
-            // document.getElementById('roomname').innerHTML = room.name;
 
             await refreshComments();
             setInterval(refreshComments, 2000);
@@ -38,80 +123,53 @@
             var eventcontent = document.getElementById('eventcontent').value;
             var deadlinecontent = document.getElementById('deadlinecontent').value;
             var deadline = document.getElementById('deadline').value;
-            // var coofficialpage = document.getElementById('coofficialpage').value;
-            // var webtest = document.getElementById('webtest').value;
-            // var sql = `insert into Comain (coname, courl, comypage,webtest) values('${coname}', '${coofficialpage}','${comypage}','${webtest}');`;
-            // var comains = await osql.connect(sql);
-            // console.log(comains);
+
             var sql = `select coid from Comain where coname = '${coname}';`;
             var Coid = await osql.connect(sql);
             console.log(Coid);
             console.log(Coid[0].coid);
-            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline,  eventcontent, deadcontent,finish) values('${me.id}', '${eventdate}','${Coid[0].coid}', '${deadline}','${eventcontent}', '${deadlinecontent}',0);`;
+
+            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline, eventcontent, deadcontent, finish) values('${me.id}', '${eventdate}', '${Coid[0].coid}', '${deadline}', '${eventcontent}', '${deadlinecontent}', 0);`;
             var schedules = await osql.connect(sql1);
             console.log(schedules);
-
         }
 
-
         async function refreshComments() {
-            var sql = `select taskid,Comain.coname,eventcontent, eventdates, deadcontent, deadline,finish from Comain inner join Schedules on Comain.coid = Schedules.coid where userid = '${me.id}';`;
+            var sql = `select taskid, Comain.coname, eventcontent, eventdates, deadcontent, deadline, finish from Comain inner join Schedules on Comain.coid = Schedules.coid where userid = '${me.id}';`;
             var objects = await osql.connect(sql);
             console.log(objects);
 
-
-            var html = '';
-            html = html + '<table border="1">';
-            html = html + `<td>id</td>`;
-            html = html + `<td>企業名</td>`;
-            html = html + `<td>イベント内容</td>`;
-            html = html + `<td>開催日</td>`;
-            html = html + `<td>締切内容</td>`;
-            html = html + `<td>締切日</td>`;
-            html = html + `<td>完了!</td>`;
-
-
+            var html = '<table>';
+            html += `<tr><th>企業名</th><th>イベント内容</th><th>開催日</th><th>締切内容</th><th>締切日、時間</th><th>完了</th></tr>`;
             for (var i = 0; i < objects.length; i++) {
                 var object = objects[i];
-                console.log(object);
                 if (object.finish == 1) {
-                    html = html + '<tr>';
-                    html = html + `<td>${object.taskid}</td>`;
-                    html = html + `<td>${object.coname}</td>`;
-                    html = html + `<td>${object.eventcontent}</td>`;
-                    html = html + `<td>${object.eventdates}</td>`;
-                    html = html + `<td>${object.deadcontent}</td>`;
-                    html = html + `<td>${object.deadline}</td>`;
-                    html = html + `<td>完了</td>`;
-                    html = html + '</tr>';
+                    html += `<tr><td>${object.coname}</td><td>${object.eventcontent}</td><td>${object.eventdates}</td><td>${object.deadcontent}</td><td>${object.deadline}</td><td>完了</td></tr>`;
                 }
             }
-            html = html + '</table>';
+            html += '</table>';
             document.getElementById('cotables').innerHTML = html;
         }
 
-
         async function complete(i) {
-            var sql = `update Schedules set finish= 1 where taskid = ${i};`;
+            var sql = `update Schedules set finish = 1 where taskid = ${i};`;
             console.log(sql);
             var finished = await osql.connect(sql);
             console.log(finished);
             refreshComments();
         }
-
     </script>
-
 </head>
 
 <body>
     <h1>過去タスク一覧</h1>
-    <div style="text-align: right;">
+    <div class="header-right">
         ようこそ<span id="lastname"></span> <span id="firstname"></span>さん
         <a href="index.html">top</a>
     </div>
-    <hr>
-    <br>
-    <div id="cotables"></div>
+    <div class="form-section">
+        <div id="cotables"></div>
+    </div>
 </body>
 
 </html>
