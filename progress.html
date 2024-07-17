@@ -16,19 +16,10 @@
         var coid = osql.getParam('coid');
         var comypage = osql.getParam('comypage');
 
-
-
         $(document).ready(async function () {
             me = await osql.getMe();
             document.getElementById('firstname').innerHTML = me.fname;
             document.getElementById('lastname').innerHTML = me.lname;
-
-
-            // var sql = `select * from Rooms where id = ${roomId};`;
-            // var objects = await osql.connect(sql);
-
-            // var room = objects[0];
-            // document.getElementById('roomname').innerHTML = room.name;
 
             await refreshComments();
             setInterval(refreshComments, 10000);
@@ -40,72 +31,58 @@
             var eventcontent = document.getElementById('eventcontent').value;
             var deadlinecontent = document.getElementById('deadlinecontent').value;
             var deadline = document.getElementById('deadline').value;
-            // var coofficialpage = document.getElementById('coofficialpage').value;
-            // var webtest = document.getElementById('webtest').value;
-            // var sql = `insert into Comain (coname, courl, comypage,webtest) values('${coname}', '${coofficialpage}','${comypage}','${webtest}');`;
-            // var comains = await osql.connect(sql);
-            // console.log(comains);
+
             var sql = `select coid from Comain where coname = '${coname}';`;
             var Coid = await osql.connect(sql);
             console.log(Coid);
             console.log(Coid[0].coid);
-            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline,  eventcontent, deadcontent,finish) values('${me.id}', '${eventdate}','${Coid[0].coid}', '${deadline}','${eventcontent}', '${deadlinecontent}',0);`;
+            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline,  eventcontent, deadcontent, finish) values('${me.id}', '${eventdate}','${Coid[0].coid}', '${deadline}','${eventcontent}', '${deadlinecontent}',0);`;
             var schedules = await osql.connect(sql1);
             console.log(schedules);
-
         }
 
-
         async function refreshComments() {
-            // var sql = `select taskid,Comain.coname,eventcontent, eventdates, deadcontent, deadline,finish,result,Ranks.userid from (Comain inner join Schedules on Comain.coid = Schedules.coid )inner join Ranks on Schedules.coid = Ranks.coid  where Ranks.userid = '${me.id}';`;
-
-            var sql = `select taskid,Comain.coname,eventcontent, eventdates, deadcontent, deadline,finish,result from Comain inner join Schedules on Comain.coid = Schedules.coid where userid = '${me.id}';`;
+            var sql = `select taskid, Comain.coname, eventcontent, eventdates, deadcontent, deadline, finish, result from Comain inner join Schedules on Comain.coid = Schedules.coid where userid = '${me.id}';`;
             var objects = await osql.connect(sql);
             console.log(objects);
 
-
             var html = '';
             html = html + '<table border="1">';
-            // html = html + `<td>id</td>`;
             html = html + `<td>企業名</td>`;
             html = html + `<td>イベント内容</td>`;
-            // html = html + `<td>開催日</td>`;
             html = html + `<td>締切内容</td>`;
-            // html = html + `<td>締切日、時間</td>`;
             html = html + `<td>進捗</td>`;
-
 
             for (var i = 0; i < objects.length; i++) {
                 var object = objects[i];
+                var selectId = `results_${object.taskid}`;
                 console.log(object);
                 if (object.finish == 1) {
                     html = html + '<tr>';
-                    // html = html + `<td>${object.taskid}</td>`;
                     html = html + `<td>${object.coname}</td>`;
                     html = html + `<td>${object.eventcontent}</td>`;
                     html = html + `<td>${object.deadcontent}</td>`;
-                    html = html + `<td><select id="results">
-                                        <option value="fin">${object.result}</option>
-                                        <option value = "pass">通過</option>
-                                        <option value = "prey">お祈り</option>
-                                        </select>
-                                    </td>`;
+                    html = html + `<td><select id="${selectId}" onchange="updateResult(${object.taskid}, '${selectId}')">
+                                        <option value="結果待ち">${object.result}</option>
+                                        <option value="通過">通過</option>
+                                        <option value="お祈り">お祈り</option>
+                                    </select>
+                                   </td>`;
                     html = html + '</tr>';
                 }
-                var results = $("#results").val();
-                var sql = `update Schedules set result = '${results}' where taskid = ${i};`;
-                console.log(sql);
-                var results = await osql.connect(sql);
-                console.log(results);
             }
             html = html + '</table>';
             document.getElementById('cotables').innerHTML = html;
         }
 
-
-
+        async function updateResult(taskId, selectId) {
+            var results = document.getElementById(selectId).value;
+            var sql = `update Schedules set result = '${results}' where taskid = ${taskId};`;
+            console.log(sql);
+            var resultUpdate = await osql.connect(sql);
+            console.log(resultUpdate);
+        }
     </script>
-
 </head>
 
 <body>
