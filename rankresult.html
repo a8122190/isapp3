@@ -28,7 +28,7 @@
             // document.getElementById('roomname').innerHTML = room.name;
             // await register();
             await refreshComments();
-            setInterval(refreshComments, 2000);
+            setInterval(refreshComments, 10000);
         });
 
         async function register() {
@@ -42,31 +42,59 @@
             var ranks = await osql.connect(sql2);
             console.log(ranks);
 
-
-        }
-
-        async function change() {
-
         }
 
         async function refreshComments() {
-            var sql = `select Comain.coname from Comain inner join Ranks on Comain.coid = Ranks.coid where Ranks.userid = '${me.id}' AND Ranks.rankid = 1000;`;
+            html1 = html1 + '</table>';
+            var sql1 = `select Comain.coname,Comain.coid, Ranks.rankid from Comain inner join Ranks on Comain.coid = Ranks.coid where Ranks.userid = '${me.id}'AND Ranks.rankid != 1000 order by Ranks.rankid asc;`;
+            var ranked = await osql.connect(sql1);
+            console.log(ranked);
+            var html1 = '';
+            html1 = html1 + '<table border="1">';
+            html1 = html1 + `<td>志望順位</td>`;
+            html1 = html1 + `<td>企業名</td>`;
+            for (var i = 0; i < ranked.length; i++) {
+                html1 = html1 + '<tr>';
+                var beranked = ranked[i];
+                html1 = html1 + `<td>${beranked.rankid}</td>`;
+                html1 = html1 + `<td>${beranked.coname}</td>`;
+                html1 = html1 + '</tr>';
+            }
+            html1 = html1 + '</table>';
+            document.getElementById('ranktables').innerHTML = html1;
+
+
+            html = html + '</table>';
+            var sql = `select Comain.coname,Comain.coid from Comain inner join Ranks on Comain.coid = Ranks.coid where Ranks.userid = '${me.id}' AND Ranks.rankid = 1000;`;
             var noranks = await osql.connect(sql);
             console.log(noranks);
 
             var html = '';
             html = html + '<table border="1">';
             html = html + `<td>企業名</td>`;
-            html = html + `<td>順位変更ボタン</td>`;
+            html = html + `<td>順位入力</td>`;
             for (var i = 0; i < noranks.length; i++) {
                 html = html + '<tr>';
                 var norank = noranks[i];
+                var rankInputId = `rank_${i}`;
                 html = html + `<td>${norank.coname}</td>`;
-                html = html + `<td><input id="rank" type="text" value='順位を入力してね！'><button onclick="change()">変更</button></td>`;
+                html = html + `<td><input id="${rankInputId}" type="text"></td>`;
+                html = html + `<td><button onclick="saveRank('${norank.coid}', '${rankInputId}')">保存</button></td>`;
                 html = html + '</tr>';
             }
             html = html + '</table>';
-            document.getElementById('cotables').innerHTML = html;
+            document.getElementById('noranktables').innerHTML = html;
+        }
+
+        async function saveRank(coid, rankInputId) {
+            var rank = document.getElementById(rankInputId).value;
+            if (rank) {
+                var sql = `update Ranks set rankid = ${rank} where userid = '${me.id}' and coid = ${coid};`;
+                var result = await osql.connect(sql);
+                console.log(result);
+            } else {
+                alert('順位を入力してください');
+            }
         }
 
     </script>
@@ -89,7 +117,10 @@
         <button onclick="register()">企業登録</button>
     </div>
     <br>
-    <div id="cotables"></div>
+    <p>志望順位</p>
+    <div id="ranktables"></div>
+    <p>順位未指定の企業</p>
+    <div id="noranktables"></div>
 </body>
 
 </html>
