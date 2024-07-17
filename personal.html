@@ -1,12 +1,113 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="lib/jquery.min.js"></script>
     <script type="text/javascript" src="lib/osql.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .header-right {
+            text-align: right;
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+        }
+
+        .header-right a {
+            color: white;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        hr {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+
+        .form-section {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-section button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .form-section button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        td a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        td a:hover {
+            text-decoration: underline;
+        }
+    </style>
 
     <script>
         osql.requireLogin();
@@ -16,17 +117,10 @@
         var coid = osql.getParam('coid');
         var comypage = osql.getParam('comypage');
 
-
         $(document).ready(async function () {
             me = await osql.getMe();
             document.getElementById('firstname').innerHTML = me.fname;
             document.getElementById('lastname').innerHTML = me.lname;
-
-            // var sql = `select * from Rooms where id = ${roomId};`;
-            // var objects = await osql.connect(sql);
-
-            // var room = objects[0];
-            // document.getElementById('roomname').innerHTML = room.name;
 
             await refreshComments();
             setInterval(refreshComments, 2000);
@@ -36,49 +130,27 @@
             var sql = `select Comain.coid,coname,courl,comypage,webtest,userid,cologid,cologpw,memo from Comain inner join Copersonal on Comain.coid = Copersonal.coid where Copersonal.userid =  '${me.id}' ;`;
             var objects = await osql.connect(sql);
             console.log(objects);
-            var html = '';
-            html = html + '<table border="1">';
-            // html = html + `<td>ID</td>`;
-            html = html + `<td>企業名</td>`;
-            html = html + `<td>ログインID</td>`;
-            html = html + `<td>ログインパスワード</td>`;
-            html = html + `<td>マイページURL</td>`;
-            html = html + `<td>webテスト</td>`;
-            html = html + `<td>メモ</td>`;
-            html = html + `<td>タスク</td>`;
+            var html = '<table>';
+            html += '<tr><th>企業名</th><th>ログインID</th><th>ログインパスワード</th><th>マイページURL</th><th>webテスト</th><th>メモ</th><th>タスク</th></tr>';
             for (var i = 0; i < objects.length; i++) {
-                html = html + '<tr>';
                 var object = objects[i];
-                html = html + `<td>${object.coname}</td>`;
-                html = html + `<td>${object.cologid}</td>`;
-                html = html + `<td>${object.cologpw}</td>`;
-                html = html + `<td><a href=${object.comypage}>マイページへ</a></td>`;
-                html = html + `<td>${object.webtest}</td>`;
-                html = html + `<td>${object.memo}</td>`;
-                html = html + `<td><a href="task.html?coname=${object.coname}">タスク管理へ</a></td>`;
-                html = html + '</tr>';
+                html += `<tr><td>${object.coname}</td><td>${object.cologid}</td><td>${object.cologpw}</td><td><a href=${object.comypage}>マイページへ</a></td><td>${object.webtest}</td><td>${object.memo}</td><td><a href="task.html?coname=${object.coname}">タスク管理へ</a></td></tr>`;
             }
-            html = html + '</table>';
+            html += '</table>';
             document.getElementById('cotables').innerHTML = html;
         }
-
     </script>
-
 </head>
 
 <body>
-    <h1>個人企業まとめページ </h1>
-    <div style="text-align: right;">
+    <h1>個人企業まとめページ</h1>
+    <div class="header-right">
         ようこそ<span id="lastname"></span> <span id="firstname"></span>さん
         <a href="index.html">top</a>
     </div>
-    <hr>
-    <div>
-        <!-- 企業名 : <input id="coname" type="text"><br>
-        マイページURL : <input id="comypage" type="text"><br> -->
+    <div class="form-section">
+        <div id="cotables"></div>
     </div>
-    <br>
-    <div id="cotables"></div>
 </body>
 
 </html>

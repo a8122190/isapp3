@@ -98,6 +98,15 @@
             background-color: #4CAF50;
             color: white;
         }
+
+        td a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        td a:hover {
+            text-decoration: underline;
+        }
     </style>
 
     <script>
@@ -117,63 +126,27 @@
             setInterval(refreshComments, 2000);
         });
 
-        async function register() {
-            var coname = document.getElementById('coname').value;
-            var eventdate = document.getElementById('eventdate').value;
-            var eventcontent = document.getElementById('eventcontent').value;
-            var deadlinecontent = document.getElementById('deadlinecontent').value;
-            var deadline = document.getElementById('deadline').value;
-
-            var sql = `select coid from Comain where coname = '${coname}';`;
-            var Coid = await osql.connect(sql);
-            console.log(Coid);
-            console.log(Coid[0].coid);
-
-            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline, eventcontent, deadcontent, finish) values('${me.id}', '${eventdate}', '${Coid[0].coid}', '${deadline}', '${eventcontent}', '${deadlinecontent}', 0);`;
-            var schedules = await osql.connect(sql1);
-            console.log(schedules);
-        }
-
         async function refreshComments() {
-            var sql = `select taskid, Comain.coname, eventcontent, eventdates, deadcontent, deadline, finish from Comain inner join Schedules on Comain.coid = Schedules.coid where userid = '${me.id}';`;
+            var sql = `select Comain.coid,coname,courl,comypage,webtest,userid,cologid,cologpw,memo from Comain inner join Copersonal on Comain.coid = Copersonal.coid where Copersonal.userid =  '${me.id}' ;`;
             var objects = await osql.connect(sql);
             console.log(objects);
-
             var html = '<table>';
-            html += `<tr><th>ID</th><th>企業名</th><th>イベント内容</th><th>開催日</th><th>締切内容</th><th>締切日、時間</th><th>完了</th></tr>`;
+            html += '<tr><th>企業名</th><th>ログインID</th><th>ログインパスワード</th><th>マイページURL</th><th>webテスト</th><th>メモ</th><th>タスク</th></tr>';
             for (var i = 0; i < objects.length; i++) {
                 var object = objects[i];
-                if (object.finish == 1) {
-                    html += `<tr><td>${object.taskid}</td><td>${object.coname}</td><td>${object.eventcontent}</td><td>${object.eventdates}</td><td>${object.deadcontent}</td><td>${object.deadline}</td><td>完了</td></tr>`;
-                }
+                html += `<tr><td>${object.coname}</td><td>${object.cologid}</td><td>${object.cologpw}</td><td><a href=${object.comypage}>マイページへ</a></td><td>${object.webtest}</td><td>${object.memo}</td><td><a href="task.html?coname=${object.coname}">タスク管理へ</a></td></tr>`;
             }
             html += '</table>';
             document.getElementById('cotables').innerHTML = html;
-        }
-
-        async function complete(i) {
-            var sql = `update Schedules set finish = 1 where taskid = ${i};`;
-            console.log(sql);
-            var finished = await osql.connect(sql);
-            console.log(finished);
-            refreshComments();
         }
     </script>
 </head>
 
 <body>
-    <h1>タスク管理</h1>
+    <h1>個人企業まとめページ</h1>
     <div class="header-right">
         ようこそ<span id="lastname"></span> <span id="firstname"></span>さん
         <a href="index.html">top</a>
-    </div>
-    <div class="form-section">
-        企業名: <input id="coname" type="text" value=""><br>
-        開催日（年、月、日）: <input id="eventdate" type="text" value="0000-00-00"><br>
-        イベント内容: <input id="eventcontent" type="text" value=""><br>
-        締切内容: <input id="deadlinecontent" type="text" value=""><br>
-        締切日（年、月、日、時間）: <input id="deadline" type="text" value="0000-00-00 00:00:00"><br>
-        <button onclick="register()">タスク登録</button>
     </div>
     <div class="form-section">
         <div id="cotables"></div>
