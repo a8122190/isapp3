@@ -49,11 +49,14 @@
             var copersonals = await osql.connect(sql1);
             console.log(copersonals);
 
-            var sql3 = `insert into Ranks (coid,userid,rankid) values (${coid},'${me.id}',1000);`;
-            var ranks = await osql.connect(sql3);
-            console.log(ranks);
+            var sqlCheck = `select * from Ranks where coid = '${coid}' and userid = '${me.id}';`;
+            var ranksCheck = await osql.connect(sqlCheck);
 
-
+            if (ranksCheck.length === 0) {
+                var sql3 = `insert into Ranks (coid, userid, rankid) values (${coid}, '${me.id}', 1000);`;
+                var ranks = await osql.connect(sql3);
+                console.log(ranks);
+            }
         }
 
         async function refreshComments() {
