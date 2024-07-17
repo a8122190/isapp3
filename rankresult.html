@@ -57,12 +57,12 @@
             var html = '';
             html = html + '<table border="1">';
             html = html + `<td>企業名</td>`;
-            html = html + `<td>変更ボタン</td>`;
+            html = html + `<td>順位変更ボタン</td>`;
             for (var i = 0; i < noranks.length; i++) {
                 html = html + '<tr>';
                 var norank = noranks[i];
                 html = html + `<td>${norank.coname}</td>`;
-                html = html + `<td><button onclick="change()">変更</button></td>`;
+                html = html + `<td><input id="rank" type="text" value='順位を入力してね！'><button onclick="change()">変更</button></td>`;
                 html = html + '</tr>';
             }
             html = html + '</table>';
