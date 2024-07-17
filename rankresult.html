@@ -1,12 +1,89 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="lib/jquery.min.js"></script>
     <script type="text/javascript" src="lib/osql.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .header-right {
+            text-align: right;
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+        }
+
+        .header-right a {
+            color: white;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        hr {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+
+        .form-section {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        td a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        td a:hover {
+            text-decoration: underline;
+        }
+    </style>
 
     <script>
         osql.requireLogin();
@@ -15,18 +92,11 @@
         var coid = osql.getParam('coid');
         var comypage = osql.getParam('comypage');
 
-
         $(document).ready(async function () {
             me = await osql.getMe();
             document.getElementById('firstname').innerHTML = me.fname;
             document.getElementById('lastname').innerHTML = me.lname;
 
-            // var sql = `select * from Rooms where id = ${roomId};`;
-            // var objects = await osql.connect(sql);
-
-            // var room = objects[0];
-            // document.getElementById('roomname').innerHTML = room.name;
-            // await register();
             await refreshComments();
             setInterval(refreshComments, 10000);
         });
@@ -36,53 +106,38 @@
             var copersonals = await osql.connect(sql1);
             console.log(copersonals);
 
-            // for (var i = 0; i < copersonals.length; i++) {
-            console.log(copersonals[i].coid);
-            var sql2 = `insert into Ranks (coid,userid,rankid) values (${copersonals[i].coid},'${me.id}',1000);`;
-            var ranks = await osql.connect(sql2);
-            console.log(ranks);
-
+            for (var i = 0; i < copersonals.length; i++) {
+                var sql2 = `insert into Ranks (coid,userid,rankid) values (${copersonals[i].coid},'${me.id}',1000);`;
+                var ranks = await osql.connect(sql2);
+                console.log(ranks);
+            }
         }
 
         async function refreshComments() {
-            html1 = html1 + '</table>';
+            var html1 = '<table>';
             var sql1 = `select Comain.coname,Comain.coid, Ranks.rankid from Comain inner join Ranks on Comain.coid = Ranks.coid where Ranks.userid = '${me.id}'AND Ranks.rankid != 1000 order by Ranks.rankid asc;`;
             var ranked = await osql.connect(sql1);
             console.log(ranked);
-            var html1 = '';
-            html1 = html1 + '<table border="1">';
-            html1 = html1 + `<td>志望順位</td>`;
-            html1 = html1 + `<td>企業名</td>`;
+            html1 += '<tr><th>志望順位</th><th>企業名</th></tr>';
             for (var i = 0; i < ranked.length; i++) {
-                html1 = html1 + '<tr>';
                 var beranked = ranked[i];
-                html1 = html1 + `<td>${beranked.rankid}</td>`;
-                html1 = html1 + `<td>${beranked.coname}</td>`;
-                html1 = html1 + '</tr>';
+                html1 += `<tr><td>${beranked.rankid}</td><td>${beranked.coname}</td></tr>`;
             }
-            html1 = html1 + '</table>';
+            html1 += '</table>';
             document.getElementById('ranktables').innerHTML = html1;
 
-
-            html = html + '</table>';
+            var html = '<table>';
             var sql = `select Comain.coname,Comain.coid from Comain inner join Ranks on Comain.coid = Ranks.coid where Ranks.userid = '${me.id}' AND Ranks.rankid = 1000;`;
             var noranks = await osql.connect(sql);
             console.log(noranks);
 
-            var html = '';
-            html = html + '<table border="1">';
-            html = html + `<td>企業名</td>`;
-            html = html + `<td>順位入力</td>`;
+            html += '<tr><th>企業名</th><th>順位入力</th><th>操作</th></tr>';
             for (var i = 0; i < noranks.length; i++) {
-                html = html + '<tr>';
                 var norank = noranks[i];
                 var rankInputId = `rank_${i}`;
-                html = html + `<td>${norank.coname}</td>`;
-                html = html + `<td><input id="${rankInputId}" type="text"></td>`;
-                html = html + `<td><button onclick="saveRank('${norank.coid}', '${rankInputId}')">保存</button></td>`;
-                html = html + '</tr>';
+                html += `<tr><td>${norank.coname}</td><td><input id="${rankInputId}" type="text"></td><td><button onclick="saveRank('${norank.coid}', '${rankInputId}')">保存</button></td></tr>`;
             }
-            html = html + '</table>';
+            html += '</table>';
             document.getElementById('noranktables').innerHTML = html;
         }
 
@@ -92,6 +147,7 @@
                 var sql = `update Ranks set rankid = ${rank} where userid = '${me.id}' and coid = ${coid};`;
                 var result = await osql.connect(sql);
                 console.log(result);
+                refreshComments();
             } else {
                 alert('順位を入力してください');
             }
@@ -102,25 +158,22 @@
 </head>
 
 <body>
-    <h1>志望順位 </h1>
-    <div style="text-align: right;">
+    <h1>志望順位</h1>
+    <div class="header-right">
         ようこそ<span id="lastname"></span> <span id="firstname"></span>さん
         <a href="index.html">top</a>
     </div>
     <hr>
-    <div>
-        <!-- 企業名 : <input id="coname" type="text"><br>
-        マイページURL : <input id="comypage" type="text"><br> -->
-        マイページID : <input id="comyid" type="text"><br>
-        マイページパスワード : <input id="comypassward" type="text"><br>
-        メモ : <input id="memo" type="text">
-        <button onclick="register()">企業登録</button>
+    <div class="form-section">
+        <h3>
+            <志望順位>
+        </h3>
+        <div id="ranktables"></div>
+        <h3>
+            <順位未指定の企業>
+        </h3>
+        <div id="noranktables"></div>
     </div>
-    <br>
-    <p>志望順位</p>
-    <div id="ranktables"></div>
-    <p>順位未指定の企業</p>
-    <div id="noranktables"></div>
 </body>
 
 </html>
