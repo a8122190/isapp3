@@ -113,6 +113,7 @@
             me = await osql.getMe();
             document.getElementById('firstname').innerHTML = me.fname;
             document.getElementById('lastname').innerHTML = me.lname;
+            document.getElementById('coname').value = coname;
 
             await refreshComments();
             setInterval(refreshComments, 2000);
@@ -146,7 +147,7 @@
             for (var i = 0; i < objects.length; i++) {
                 var object = objects[i];
                 console.log(object);
-                if (object.finish == null) {
+                if (object.finish == 0) {
                     html = html + '<tr>';
                     html = html + `<td>${object.taskid}</td>`;
                     html = html + `<td>${object.coname}</td>`;
@@ -168,6 +169,13 @@
             var finished = await osql.connect(sql);
             console.log(finished);
             refreshComments();
+
+
+            var sql = `update Schedules set result = '結果待ち' where Schedules.taskid = ${i};`;
+            console.log(sql);
+            var results = await osql.connect(sql);
+            console.log(results);
+
         }
 
     </script>
@@ -182,7 +190,7 @@
     </div>
     <hr>
     <div class="form-section">
-        企業名 : <input id="coname" type="text"><br>
+        企業名 : <input id="coname" type="text" value="coname"><br>
         開催日 : <input id="eventdate" type="text" value='0000-00-00'><br>
         イベント内容 : <input id="eventcontent" type="text"> 例.インターン<br>
         締切内容 : <input id="deadlinecontent" type="text"> 例.ES<br>
