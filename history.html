@@ -140,11 +140,11 @@
             console.log(objects);
 
             var html = '<table>';
-            html += `<tr><th>企業名</th><th>イベント内容</th><th>開催日</th><th>締切内容</th><th>締切日、時間</th><th>完了</th></tr>`;
+            html += `<tr><th>企業名</th><th>イベント内容</th><th>開催日</th><th>締切内容</th><th>締切日、時間</th></tr>`;
             for (var i = 0; i < objects.length; i++) {
                 var object = objects[i];
                 if (object.finish == 1) {
-                    html += `<tr><td>${object.coname}</td><td>${object.eventcontent}</td><td>${object.eventdates}</td><td>${object.deadcontent}</td><td>${object.deadline}</td><td>完了</td></tr>`;
+                    html += `<tr><td>${object.coname}</td><td>${object.eventcontent}</td><td>${object.eventdates}</td><td>${object.deadcontent}</td><td>${object.deadline}</td></tr>`;
                 }
             }
             html += '</table>';
