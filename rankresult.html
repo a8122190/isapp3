@@ -115,13 +115,14 @@
 
         async function refreshComments() {
             var html1 = '<table>';
-            var sql1 = `select Comain.coname,Comain.coid, Ranks.rankid from Comain inner join Ranks on Comain.coid = Ranks.coid where Ranks.userid = '${me.id}'AND Ranks.rankid != 1000 order by Ranks.rankid asc;`;
+            var sql1 = `select Comain.coname,Comain.coid, Ranks.rankid from Comain inner join Ranks on Comain.coid = Ranks.coid where Ranks.userid = '${me.id}' AND Ranks.rankid != 1000 order by Ranks.rankid asc;`;
             var ranked = await osql.connect(sql1);
             console.log(ranked);
-            html1 += '<tr><th>志望順位</th><th>企業名</th></tr>';
+            html1 += '<tr><th>志望順位</th><th>企業名</th><th>順位変更</th><th>操作</th></tr>';
             for (var i = 0; i < ranked.length; i++) {
                 var beranked = ranked[i];
-                html1 += `<tr><td>${beranked.rankid}</td><td>${beranked.coname}</td></tr>`;
+                var rankInputId = `rank_${beranked.coid}`;
+                html1 += `<tr><td>${beranked.rankid}</td><td>${beranked.coname}</td><td><input id="${rankInputId}" type="text" value="${beranked.rankid}"></td><td><button onclick="saveRank('${beranked.coid}', '${rankInputId}')">保存</button></td></tr>`;
             }
             html1 += '</table>';
             document.getElementById('ranktables').innerHTML = html1;
@@ -134,7 +135,7 @@
             html += '<tr><th>企業名</th><th>順位入力</th><th>操作</th></tr>';
             for (var i = 0; i < noranks.length; i++) {
                 var norank = noranks[i];
-                var rankInputId = `rank_${i}`;
+                var rankInputId = `rank_new_${norank.coid}`;
                 html += `<tr><td>${norank.coname}</td><td><input id="${rankInputId}" type="text"></td><td><button onclick="saveRank('${norank.coid}', '${rankInputId}')">保存</button></td></tr>`;
             }
             html += '</table>';
@@ -165,13 +166,9 @@
     </div>
     <hr>
     <div class="form-section">
-        <h3>
-            <志望順位>
-        </h3>
+        <h3>志望順位</h3>
         <div id="ranktables"></div>
-        <h3>
-            <順位未指定の企業>
-        </h3>
+        <h3>順位未指定の企業</h3>
         <div id="noranktables"></div>
     </div>
 </body>

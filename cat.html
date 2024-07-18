@@ -43,51 +43,13 @@
             border-top: 1px solid #ddd;
         }
 
-        .search-section,
-        .register-section,
-        .task-section {
+        .form-section {
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .search-section h4,
-        .register-section h4,
-        .task-section h4 {
-            margin-top: 0;
-        }
-
-        .search-section input,
-        .register-section input,
-        .task-section input {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .search-section button,
-        .register-section button,
-        .task-section button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
-
-        .search-section button:hover,
-        .register-section button:hover,
-        .task-section button:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
         }
 
         table {
@@ -113,33 +75,13 @@
             color: white;
         }
 
-        .task-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .task-link a {
-            color: white;
-            background-color: #4CAF50;
-            padding: 5px 10px;
-            border-radius: 4px;
+        td a {
+            color: #4CAF50;
             text-decoration: none;
-            transition: background-color 0.3s ease;
         }
 
-        .task-link a:hover {
-            background-color: #45a049;
-        }
-
-        .task-link a span {
-            background-color: #4CAF50;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-        }
-
-        .task-link a:hover span {
-            background-color: #45a049;
+        td a:hover {
+            text-decoration: underline;
         }
     </style>
 
@@ -147,7 +89,6 @@
         osql.requireLogin();
 
         var me;
-        var coname = osql.getParam('coname');
         var coid = osql.getParam('coid');
         var comypage = osql.getParam('comypage');
 
@@ -155,95 +96,80 @@
             me = await osql.getMe();
             document.getElementById('firstname').innerHTML = me.fname;
             document.getElementById('lastname').innerHTML = me.lname;
-            document.getElementById('coname').value = coname;
 
             await refreshComments();
-            setInterval(refreshComments, 2000);
+            setInterval(refreshComments, 10000);
         });
 
         async function register() {
-            var coname = document.getElementById('coname').value;
-            var eventdate = document.getElementById('eventdate').value;
-            var eventcontent = document.getElementById('eventcontent').value;
-            var deadlinecontent = document.getElementById('deadlinecontent').value;
-            var deadline = document.getElementById('deadline').value;
+            var sql1 = `select Comain.coid,Comain.coname from Comain inner join Copersonal on Comain.coid = Copersonal.coid where Copersonal.userid =  '${me.id}';`;
+            var copersonals = await osql.connect(sql1);
+            console.log(copersonals);
 
-            var sql = `select coid from Comain where coname = '${coname}';`;
-            var Coid = await osql.connect(sql);
-            console.log(Coid);
-            console.log(Coid[0].coid);
-            var sql1 = `insert into Schedules (userid, eventdates, coid, deadline,  eventcontent, deadcontent,finish) values('${me.id}', '${eventdate}','${Coid[0].coid}', '${deadline}','${eventcontent}', '${deadlinecontent}',0);`;
-            var schedules = await osql.connect(sql1);
-            console.log(schedules);
+            for (var i = 0; i < copersonals.length; i++) {
+                var sql2 = `insert into Ranks (coid,userid,rankid) values (${copersonals[i].coid},'${me.id}',1000);`;
+                var ranks = await osql.connect(sql2);
+                console.log(ranks);
+            }
         }
 
         async function refreshComments() {
-            var sql = `select taskid, Comain.coname, eventcontent, eventdates, deadcontent, deadline, finish from Comain inner join Schedules on Comain.coid = Schedules.coid where userid = '${me.id}';`;
-            var objects = await osql.connect(sql);
-            console.log(objects);
+            var html1 = '<table>';
+            var sql1 = `select Comain.coname,Comain.coid, Ranks.rankid from Comain inner join Ranks on Comain.coid = Ranks.coid where Ranks.userid = '${me.id}' AND Ranks.rankid != 1000 order by Ranks.rankid asc;`;
+            var ranked = await osql.connect(sql1);
+            console.log(ranked);
+            html1 += '<tr><th>志望順位</th><th>企業名</th><th>順位変更</th><th>操作</th></tr>';
+            for (var i = 0; i < ranked.length; i++) {
+                var beranked = ranked[i];
+                var rankInputId = `rank_${beranked.coid}`;
+                html1 += `<tr><td>${beranked.rankid}</td><td>${beranked.coname}</td><td><input id="${rankInputId}" type="text" value="${beranked.rankid}"></td><td><button onclick="saveRank('${beranked.coid}', '${rankInputId}')">保存</button></td></tr>`;
+            }
+            html1 += '</table>';
+            document.getElementById('ranktables').innerHTML = html1;
 
-            var html = '';
-            html += '<table>';
-            html += '<tr><th>企業名</th><th>イベント内容</th><th>開催日</th><th>締切内容</th><th>締切日、時間</th><th>完了？</th></tr>';
+            var html = '<table>';
+            var sql = `select Comain.coname,Comain.coid from Comain inner join Ranks on Comain.coid = Ranks.coid where Ranks.userid = '${me.id}' AND Ranks.rankid = 1000;`;
+            var noranks = await osql.connect(sql);
+            console.log(noranks);
 
-            for (var i = 0; i < objects.length; i++) {
-                var object = objects[i];
-                if (object.finish == 0) {
-                    html += '<tr>';
-                    html += `<td>${object.coname}</td>`;
-                    html += `<td>${object.eventcontent}</td>`;
-                    html += `<td>${object.eventdates}</td>`;
-                    html += `<td>${object.deadcontent}</td>`;
-                    html += `<td>${object.deadline}</td>`;
-                    html += `<td><button onclick="complete(${object.taskid})">完了</button></td>`;
-                    html += '</tr>';
-                }
+            html += '<tr><th>企業名</th><th>順位入力</th><th>操作</th></tr>';
+            for (var i = 0; i < noranks.length; i++) {
+                var norank = noranks[i];
+                var rankInputId = `rank_new_${norank.coid}`;
+                html += `<tr><td>${norank.coname}</td><td><input id="${rankInputId}" type="text"></td><td><button onclick="saveRank('${norank.coid}', '${rankInputId}')">保存</button></td></tr>`;
             }
             html += '</table>';
-            document.getElementById('cotables').innerHTML = html;
+            document.getElementById('noranktables').innerHTML = html;
         }
 
-        async function complete(taskId) {
-            var sql = `update Schedules set finish = 1 where taskid = ${taskId};`;
-            console.log(sql);
-            var finished = await osql.connect(sql);
-            console.log(finished);
-
-            var sql = `update Schedules set result = '結果待ち' where taskid = ${taskId};`;
-            console.log(sql);
-            var results = await osql.connect(sql);
-            console.log(results);
-
-            refreshComments();
+        async function saveRank(coid, rankInputId) {
+            var rank = document.getElementById(rankInputId).value;
+            if (rank) {
+                var sql = `update Ranks set rankid = ${rank} where userid = '${me.id}' and coid = ${coid};`;
+                var result = await osql.connect(sql);
+                console.log(result);
+                refreshComments();
+            } else {
+                alert('順位を入力してください');
+            }
         }
+
     </script>
+
 </head>
 
 <body>
-    <h1>タスク管理</h1>
+    <h1>志望順位</h1>
     <div class="header-right">
         ようこそ<span id="lastname"></span> <span id="firstname"></span>さん
         <a href="index.html">top</a>
     </div>
     <hr>
-    <div class="register-section">
-        <h4>タスク登録</h4>
-        <div>
-            企業名 : <input id="coname" type="text" value="企業名"><br>
-            開催日 : <input id="eventdate" type="text" value="0000-00-00"><br>
-            イベント内容 : <input id="eventcontent" type="text" placeholder="インターン"><br>
-            締切内容 : <input id="deadlinecontent" type="text" placeholder="ES"><br>
-            締切日、時間 : <input id="deadline" type="text" value="0000-00-00 00:00:00">
-            <button onclick="register()">タスク登録</button>
-        </div>
-    </div>
-    <br>
-    <div class="task-section">
-        <h4>現在のタスク</h4>
-        <div id="cotables"></div>
-    </div>
-    <div class="task-link">
-        <a href="history.html"><span>今までのタスクへ</span></a>
+    <div class="form-section">
+        <h3>志望順位</h3>
+        <div id="ranktables"></div>
+        <h3>順位未指定の企業</h3>
+        <div id="noranktables"></div>
     </div>
 </body>
 
